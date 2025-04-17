@@ -3,7 +3,14 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 const config = {
 	preprocess: vitePreprocess(),
-	kit: { adapter: adapter() }
+	kit: {
+		// ... other config
+		alias: {
+			"@/*": "./src/lib/*",
+			"@components/*": "./src/components/*",
+		},
+		adapter: adapter()
+	}
 };
 
 export default config;
