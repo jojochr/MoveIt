@@ -20,7 +20,7 @@ export class Exercise {
   name: string;
   exerciseHistory: ExerciseLogEntry[] = [];
 
-  GetLastPerformedData(): ExerciseLogEntry | null {
+  get LastHistoryEntry(): ExerciseLogEntry | null {
     if (this.exerciseHistory.length > 0) {
       return this.exerciseHistory[0];
     }

@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 export default function TabLayout() {
   return (
@@ -25,15 +25,13 @@ export default function TabLayout() {
           ),
         }}
       />
-      ;
       <Tabs.Screen
         name="pr-tracker"
         options={{
           title: 'PR Tracker',
-          tabBarIcon: ({ color, focused }) => <FontAwesome6 name="dumbbell" color={color} size={24} />,
+          tabBarIcon: ({ color, focused }) => <MaterialCommunityIcons name="weight-lifter" color={color} size={24} />,
         }}
       />
-      ;
     </Tabs>
   );
 }
