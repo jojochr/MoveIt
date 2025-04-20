@@ -13,9 +13,7 @@ export class ExerciseStore {
   }
 }
 
-export const exerciseStore$: Observable<ExerciseStore> = observable<ExerciseStore>(
-  () => new ExerciseStore([])
-);
+export const exerciseStore$: Observable<ExerciseStore> = observable<ExerciseStore>(() => new ExerciseStore([]));
 
 syncObservable(exerciseStore$, {
   persist: {
