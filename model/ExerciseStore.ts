@@ -26,7 +26,7 @@ export const exerciseStore$: Observable<ExerciseStore> = observable(
 ValidateAndPatch(exerciseStore$);
 
 function ValidateAndPatch(store: Observable<ExerciseStore>) {
-  // If exercises dont exist yet initialize them
+  // If exercises don't exist yet initialize them
   if (store.exercises.peek() === undefined || store.exercises.peek() === null) {
     store.exercises.set([]);
     store.selectedExercise.set(null);

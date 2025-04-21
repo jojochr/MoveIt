@@ -10,41 +10,29 @@ export interface ExerciseLogEntry {
 /**
  * Represents an exercise to be displayed in UI and persisted in DB
  */
-export class Exercise {
-  constructor(id: number, name: string) {
-    this.id = id;
-    this.name = name;
-  }
-
+export interface Exercise {
   id: number;
   name: string;
-  exerciseHistory: ExerciseLogEntry[] = [];
-
-  get LastHistoryEntry(): ExerciseLogEntry | null {
-    if (this.exerciseHistory.length > 0) {
-      return this.exerciseHistory[0];
-    }
-
-    return null;
-  }
+  exerciseHistory: ExerciseLogEntry[];
 }
 
 /**
- * Represents an exercise that is currently being created and not yet assigned a proper ID or any data points
+ * Constructor for Exercise Interface
+ * @constructor
  */
-export class NewExercise {
-  name: string;
-
-  constructor(name: string) {
-    this.name = name;
-  }
+export function CreateExercise(id: number, name: string): Exercise {
+  return {
+    id: id,
+    name: name,
+    exerciseHistory: [],
+  };
 }
 
-export const Deadlift: Exercise = new Exercise(1, 'Deadlift');
-export const Squats: Exercise = new Exercise(2, 'Squats');
-export const Leg_Extensions: Exercise = new Exercise(3, 'Leg Extensions');
-export const Pull_Ups: Exercise = new Exercise(4, 'Pull Ups');
-export const Bicep_Curls: Exercise = new Exercise(5, 'Bicep Curls');
+export const Deadlift: Exercise = CreateExercise(1, 'Deadlift');
+export const Squats: Exercise = CreateExercise(2, 'Squats');
+export const Leg_Extensions: Exercise = CreateExercise(3, 'Leg Extensions');
+export const Pull_Ups: Exercise = CreateExercise(4, 'Pull Ups');
+export const Bicep_Curls: Exercise = CreateExercise(5, 'Bicep Curls');
 
 /**
  * This Function returns all the exercises that are built into the app
