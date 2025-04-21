@@ -1,5 +1,5 @@
 import { Observable, observable } from '@legendapp/state';
-import { syncObservable } from '@legendapp/state/sync';
+import { synced } from '@legendapp/state/sync';
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv';
 import { Exercise } from '@/model/Exercise';
 
@@ -13,11 +13,29 @@ export class ExerciseStore {
   }
 }
 
-export const exerciseStore$: Observable<ExerciseStore> = observable<ExerciseStore>(() => new ExerciseStore([]));
+export const exerciseStore$: Observable<ExerciseStore> = observable(
+  synced<ExerciseStore>({
+    persist: {
+      name: 'ExerciseStore',
+      plugin: ObservablePersistMMKV,
+    },
+  })
+);
 
-syncObservable(exerciseStore$, {
-  persist: {
-    name: 'exercises',
-    plugin: ObservablePersistMMKV,
-  },
-});
+// Make sure we are initialized correctly
+ValidateAndPatch(exerciseStore$);
+
+function ValidateAndPatch(store: Observable<ExerciseStore>) {
+  // If exercises dont exist yet initialize them
+  if (store.exercises.peek() === undefined || store.exercises.peek() === null) {
+    store.exercises.set([]);
+    store.selectedExercise.set(null);
+    return;
+  }
+
+  // If selected exercise is invalid
+  if (store.selectedExercise.peek() === undefined) {
+    store.selectedExercise.set(null);
+    return;
+  }
+}
