@@ -1,5 +1,5 @@
 import { Text, View, ScrollView, TouchableOpacity, TextInput } from 'react-native';
-import { Exercise, GET_BUILTIN_EXERCISES } from '@/model/Exercise';
+import { Exercise, GET_BUILTIN_EXERCISES, GetLastHistoryEntry } from '@/model/Exercise';
 import { exerciseStore$ } from '@/model/ExerciseStore';
 import { use$ } from '@legendapp/state/react';
 import { useState } from 'react';
@@ -11,6 +11,15 @@ export default function PRTrackerScreen() {
 
   const exercises = use$(exerciseStore$.exercises);
   const selectedExercise: Exercise | null = use$(exerciseStore$.selectedExercise);
+  const lastHistoryDate: Date | null = use$(() => {
+    const selectedExercise = exerciseStore$.selectedExercise.get();
+    if (selectedExercise === null) return null;
+
+    const lastHistoryEntry = GetLastHistoryEntry(selectedExercise);
+    if (lastHistoryEntry === null) return null;
+
+    return lastHistoryEntry.date;
+  });
 
   const [maxWeight, setMaxWeight] = useState(0);
   const [repetitions, setRepetitions] = useState(0);
@@ -84,10 +93,8 @@ export default function PRTrackerScreen() {
             />
           </View>
 
-          {selectedExercise.LastHistoryEntry !== null && (
-            <Text className="text-blue-500">
-              Last performed: {selectedExercise.LastHistoryEntry.date.toLocaleDateString()}
-            </Text>
+          {lastHistoryDate !== null && (
+            <Text className="text-blue-500">Last performed: {lastHistoryDate.toLocaleDateString()}</Text>
           )}
 
           {/*//Todo: Implement Save in Model*/}

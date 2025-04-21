@@ -16,6 +16,14 @@ export interface Exercise {
   exerciseHistory: ExerciseLogEntry[];
 }
 
+export function GetLastHistoryEntry(exercise: Exercise): ExerciseLogEntry | null {
+  if (exercise.exerciseHistory === null || exercise.exerciseHistory.length <= 0) {
+    return null;
+  }
+
+  return exercise.exerciseHistory[0];
+}
+
 /**
  * Constructor for Exercise Interface
  * @constructor
