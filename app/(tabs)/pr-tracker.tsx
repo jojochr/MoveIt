@@ -64,7 +64,9 @@ export default function PRTrackerScreen() {
       </View>
 
       {selectedExercise === null ? (
-        <Text>Exercise was null</Text>
+        <View className="flex-1 bg-gray-100 rounded-lg border-2 border-gray-300 justify-center items-center text-gray-500 m-2">
+          Select an Exercise to track your progress
+        </View>
       ) : (
         <ScrollView className="bg-white m-2 p-4 rounded-xl ">
           <Text className="text-2xl font-bold text-blue-500">{selectedExercise.name}</Text>
