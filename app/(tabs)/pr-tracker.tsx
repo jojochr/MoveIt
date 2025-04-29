@@ -1,40 +1,56 @@
-import { Text, View, ScrollView, TouchableOpacity, TextInput } from 'react-native';
-import { Exercise, GET_BUILTIN_EXERCISES, GetLastHistoryEntry } from '@/model/Exercise';
-import { exerciseStore$ } from '@/model/ExerciseStore';
+import { Text, View, ScrollView, TouchableOpacity, TextInput, Pressable } from 'react-native';
+import { Exercise, GetLastHistoryEntry } from '@/model/Exercise';
+import {
+  exerciseStore$,
+  NoExercise,
+  CreatingExercise,
+  SelectedExerciseType,
+  Exercise_asSelected,
+} from '@/model/ExerciseStore';
 import { use$ } from '@legendapp/state/react';
 import { useState } from 'react';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 export default function PRTrackerScreen() {
-  // Just now for debugging
-  exerciseStore$.exercises.set(GET_BUILTIN_EXERCISES());
-
   const exercises = use$(exerciseStore$.exercises);
-  const selectedExercise: Exercise | null = use$(exerciseStore$.selectedExercise);
+  const selectedExercise: SelectedExerciseType = use$(exerciseStore$.selectedExercise);
+
   const lastHistoryDate: Date | null = use$(() => {
     const selectedExercise = exerciseStore$.selectedExercise.get();
-    if (selectedExercise === null) return null;
+    if (selectedExercise.kind !== 'Exercise') return null;
 
-    const lastHistoryEntry = GetLastHistoryEntry(selectedExercise);
-    if (lastHistoryEntry === null) return null;
+    const lastHistoryEntry = GetLastHistoryEntry(selectedExercise.exercise);
 
-    return lastHistoryEntry.date;
+    return lastHistoryEntry?.date ?? null;
   });
 
-  const [maxWeight, setMaxWeight] = useState(0);
-  const [repetitions, setRepetitions] = useState(0);
+  const [maxWeight, setMaxWeight] = useState<number>(0);
+  const [repetitions, setRepetitions] = useState<number>(0);
 
   /**
    * Gets run when a button in the exercise list gets pushed
    * @param newSelectedExercise The new exercise that belonged to the pressed button
    */
   function OnSelectedExercise(newSelectedExercise: Exercise) {
-    if (selectedExercise === null || selectedExercise?.id !== newSelectedExercise.id) {
-      exerciseStore$.selectedExercise.set(newSelectedExercise);
+    if (selectedExercise.kind !== 'Exercise' || selectedExercise.exercise.id !== newSelectedExercise.id) {
+      exerciseStore$.selectedExercise.set(Exercise_asSelected(newSelectedExercise));
     } else {
-      exerciseStore$.selectedExercise.set(null);
+      exerciseStore$.selectedExercise.set(NoExercise);
     }
 
+    // Reset Inputs
+    setMaxWeight(0);
+    setRepetitions(0);
+  }
+
+  /**
+   * Gets run when the "+"-button to create a new exercise gets pushed
+   */
+  function OnCreatingExercise() {
+    exerciseStore$.selectedExercise.set(CreatingExercise);
+
+    // Reset Inputs
     setMaxWeight(0);
     setRepetitions(0);
   }
@@ -49,7 +65,8 @@ export default function PRTrackerScreen() {
 
         <ScrollView className="w-fit">
           {exercises.map((exercise: Exercise) => {
-            let isSelected: boolean = selectedExercise?.id === exercise.id;
+            let isSelected: boolean =
+              selectedExercise.kind === 'Exercise' && selectedExercise.exercise.id === exercise.id;
 
             return (
               <TouchableOpacity
@@ -60,16 +77,18 @@ export default function PRTrackerScreen() {
               </TouchableOpacity>
             );
           })}
+
+          <Pressable
+            className="rounded-md p-2 items-center bg-blue-900 hover:bg-blue-700 active:opacity-20"
+            onPress={OnCreatingExercise}>
+            <AntDesign name="pluscircle" size={20} color="white" />
+          </Pressable>
         </ScrollView>
       </View>
 
-      {selectedExercise === null ? (
-        <View className="flex-1 bg-gray-100 rounded-lg border-2 border-gray-300 justify-center items-center text-gray-500 m-2">
-          Select an Exercise to track your progress
-        </View>
-      ) : (
+      {selectedExercise.kind === 'Exercise' ? (
         <ScrollView className="bg-white m-2 p-4 rounded-xl ">
-          <Text className="text-2xl font-bold text-blue-500">{selectedExercise.name}</Text>
+          <Text className="text-2xl font-bold text-blue-500">{selectedExercise.exercise.name}</Text>
 
           <View>
             {/*//Todo: Add icon*/}
@@ -139,6 +158,14 @@ export default function PRTrackerScreen() {
           {/*  </View>*/}
           {/*)}*/}
         </ScrollView>
+      ) : selectedExercise.kind === 'CreatingExercise' ? (
+        <View className="flex-1 bg-gray-100 rounded-lg border-2 border-gray-300 justify-center items-center m-2">
+          <Text className="text-gray-500">Exercise Creator will be here when its done :)</Text>
+        </View>
+      ) : (
+        <View className="flex-1 bg-gray-100 rounded-lg border-2 border-gray-300 justify-center items-center text-gray-500 m-2">
+          <Text className="text-gray-500">Select an Exercise to track your progress</Text>
+        </View>
       )}
     </View>
   );

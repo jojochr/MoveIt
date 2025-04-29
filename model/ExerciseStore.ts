@@ -3,14 +3,31 @@ import { synced } from '@legendapp/state/sync';
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv';
 import { Exercise } from '@/model/Exercise';
 
-export class ExerciseStore {
-  exercises: Exercise[];
-  selectedExercise: Exercise | null;
+export type SelectedExerciseType = ExerciseState | NoExerciseState | CreatingExerciseState;
 
-  constructor(exercises: Exercise[]) {
-    this.exercises = exercises;
-    this.selectedExercise = null;
-  }
+type ExerciseState = {
+  kind: 'Exercise';
+  exercise: Exercise;
+};
+
+type NoExerciseState = {
+  kind: 'NoExercise';
+};
+
+type CreatingExerciseState = {
+  kind: 'CreatingExercise';
+};
+
+export function Exercise_asSelected(exercise: Exercise): SelectedExerciseType {
+  return { kind: 'Exercise', exercise: exercise };
+}
+
+export const NoExercise: SelectedExerciseType = { kind: 'NoExercise' };
+export const CreatingExercise: SelectedExerciseType = { kind: 'CreatingExercise' };
+
+export interface ExerciseStore {
+  exercises: Exercise[];
+  selectedExercise: SelectedExerciseType;
 }
 
 export const exerciseStore$: Observable<ExerciseStore> = observable(
@@ -25,17 +42,49 @@ export const exerciseStore$: Observable<ExerciseStore> = observable(
 // Make sure we are initialized correctly
 ValidateAndPatch(exerciseStore$);
 
+/**
+ * This Does all the necessary validation and stuff to make the store extracted from persistence usable
+ * @param store The store that should be made usable
+ */
 function ValidateAndPatch(store: Observable<ExerciseStore>) {
   // If exercises don't exist yet initialize them
   if (store.exercises.peek() === undefined || store.exercises.peek() === null) {
     store.exercises.set([]);
-    store.selectedExercise.set(null);
+    store.selectedExercise.set(NoExercise);
     return;
   }
 
+  // Make sure the selected Exercise points to valid data
+  PatchSelectedExercise(store);
+}
+
+/**
+ * This takes a store to be patched and validates/patches its selected exercise
+ * @param store The Store to be patched
+ */
+function PatchSelectedExercise(store: Observable<ExerciseStore>) {
+  const selectedExercise = store.selectedExercise.peek();
+
   // If selected exercise is invalid
-  if (store.selectedExercise.peek() === undefined) {
-    store.selectedExercise.set(null);
+  if (selectedExercise === undefined || selectedExercise === null) {
+    store.selectedExercise.set(NoExercise);
     return;
   }
+
+  // Make sure selected exercise points to the correct entry in ExerciseList
+  if (selectedExercise.kind === 'Exercise') {
+    const maybeID: number = selectedExercise.exercise.id;
+
+    let maybeExercise: Exercise | null = GetExerciseByID(store.peek(), maybeID);
+    store.selectedExercise.set(maybeExercise === null ? NoExercise : Exercise_asSelected(maybeExercise));
+  }
+}
+
+function GetExerciseByID(store: ExerciseStore, id: number): Exercise | null {
+  let maybeExercise = store.exercises.find(exercise => {
+    return exercise.id === id;
+  });
+
+  // Return Exercise in success case or convert undefined to null in case we did not find the exercise
+  return typeof maybeExercise === 'undefined' ? null : maybeExercise;
 }
