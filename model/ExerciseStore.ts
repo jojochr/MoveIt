@@ -27,7 +27,7 @@ export const CreatingExercise: SelectedExerciseType = { kind: 'CreatingExercise'
 
 export interface ExerciseStore {
   exercises: Exercise[];
-  selectedExercise: SelectedExerciseType;
+  currentSelection: SelectedExerciseType;
 }
 
 export const exerciseStore$: Observable<ExerciseStore> = observable(
@@ -50,7 +50,7 @@ function ValidateAndPatch(store: Observable<ExerciseStore>) {
   // If exercises don't exist yet initialize them
   if (store.exercises.peek() === undefined || store.exercises.peek() === null) {
     store.exercises.set([]);
-    store.selectedExercise.set(NoExercise);
+    store.currentSelection.set(NoExercise);
     return;
   }
 
@@ -63,11 +63,11 @@ function ValidateAndPatch(store: Observable<ExerciseStore>) {
  * @param store The Store to be patched
  */
 function PatchSelectedExercise(store: Observable<ExerciseStore>) {
-  const selectedExercise = store.selectedExercise.peek();
+  const selectedExercise = store.currentSelection.peek();
 
   // If selected exercise is invalid
   if (selectedExercise === undefined || selectedExercise === null) {
-    store.selectedExercise.set(NoExercise);
+    store.currentSelection.set(NoExercise);
     return;
   }
 
@@ -76,7 +76,7 @@ function PatchSelectedExercise(store: Observable<ExerciseStore>) {
     const maybeID: number = selectedExercise.exercise.id;
 
     let maybeExercise: Exercise | null = GetExerciseByID(store.peek(), maybeID);
-    store.selectedExercise.set(maybeExercise === null ? NoExercise : Exercise_asSelected(maybeExercise));
+    store.currentSelection.set(maybeExercise === null ? NoExercise : Exercise_asSelected(maybeExercise));
   }
 }
 

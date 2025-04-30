@@ -14,10 +14,10 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 
 export default function PRTrackerScreen() {
   const exercises = use$(exerciseStore$.exercises);
-  const selectedExercise: SelectedExerciseType = use$(exerciseStore$.selectedExercise);
+  const currentSelection: SelectedExerciseType = use$(exerciseStore$.currentSelection);
 
   const lastHistoryDate: Date | null = use$(() => {
-    const selectedExercise = exerciseStore$.selectedExercise.get();
+    const selectedExercise = exerciseStore$.currentSelection.get();
     if (selectedExercise.kind !== 'Exercise') return null;
 
     const lastHistoryEntry = GetLastHistoryEntry(selectedExercise.exercise);
@@ -33,10 +33,10 @@ export default function PRTrackerScreen() {
    * @param newSelectedExercise The new exercise that belonged to the pressed button
    */
   function OnSelectedExercise(newSelectedExercise: Exercise) {
-    if (selectedExercise.kind !== 'Exercise' || selectedExercise.exercise.id !== newSelectedExercise.id) {
-      exerciseStore$.selectedExercise.set(Exercise_asSelected(newSelectedExercise));
+    if (currentSelection.kind !== 'Exercise' || currentSelection.exercise.id !== newSelectedExercise.id) {
+      exerciseStore$.currentSelection.set(Exercise_asSelected(newSelectedExercise));
     } else {
-      exerciseStore$.selectedExercise.set(NoExercise);
+      exerciseStore$.currentSelection.set(NoExercise);
     }
 
     // Reset Inputs
@@ -48,7 +48,7 @@ export default function PRTrackerScreen() {
    * Gets run when the "+"-button to create a new exercise gets pushed
    */
   function OnCreatingExercise() {
-    exerciseStore$.selectedExercise.set(CreatingExercise);
+    exerciseStore$.currentSelection.set(CreatingExercise);
 
     // Reset Inputs
     setMaxWeight(0);
@@ -66,7 +66,7 @@ export default function PRTrackerScreen() {
         <ScrollView className="w-fit">
           {exercises.map((exercise: Exercise) => {
             let isSelected: boolean =
-              selectedExercise.kind === 'Exercise' && selectedExercise.exercise.id === exercise.id;
+              currentSelection.kind === 'Exercise' && currentSelection.exercise.id === exercise.id;
 
             return (
               <TouchableOpacity
@@ -86,9 +86,9 @@ export default function PRTrackerScreen() {
         </ScrollView>
       </View>
 
-      {selectedExercise.kind === 'Exercise' ? (
+      {currentSelection.kind === 'Exercise' ? (
         <ScrollView className="bg-white m-2 p-4 rounded-xl ">
-          <Text className="text-2xl font-bold text-blue-500">{selectedExercise.exercise.name}</Text>
+          <Text className="text-2xl font-bold text-blue-500">{currentSelection.exercise.name}</Text>
 
           <View>
             {/*//Todo: Add icon*/}
@@ -158,7 +158,7 @@ export default function PRTrackerScreen() {
           {/*  </View>*/}
           {/*)}*/}
         </ScrollView>
-      ) : selectedExercise.kind === 'CreatingExercise' ? (
+      ) : currentSelection.kind === 'CreatingExercise' ? (
         <View className="flex-1 bg-gray-100 rounded-lg border-2 border-gray-300 justify-center items-center m-2">
           <Text className="text-gray-500">Exercise Creator will be here when its done :)</Text>
         </View>
