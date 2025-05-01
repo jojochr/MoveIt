@@ -1,33 +1,12 @@
 import { Observable, observable } from '@legendapp/state';
 import { synced } from '@legendapp/state/sync';
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv';
-import { Exercise } from '@/model/Exercise';
-
-export type SelectedExerciseType = ExerciseState | NoExerciseState | CreatingExerciseState;
-
-type ExerciseState = {
-  kind: 'Exercise';
-  exercise: Exercise;
-};
-
-type NoExerciseState = {
-  kind: 'NoExercise';
-};
-
-type CreatingExerciseState = {
-  kind: 'CreatingExercise';
-};
-
-export function Exercise_asSelected(exercise: Exercise): SelectedExerciseType {
-  return { kind: 'Exercise', exercise: exercise };
-}
-
-export const NoExercise: SelectedExerciseType = { kind: 'NoExercise' };
-export const CreatingExercise: SelectedExerciseType = { kind: 'CreatingExercise' };
+import { Exercise, GET_BUILTIN_EXERCISES } from '@/model/Exercise';
 
 export interface ExerciseStore {
   exercises: Exercise[];
-  currentSelection: SelectedExerciseType;
+  selectedExerciseID: number | null;
+  creatingExercise: boolean;
 }
 
 export const exerciseStore$: Observable<ExerciseStore> = observable(
@@ -47,44 +26,76 @@ ValidateAndPatch(exerciseStore$);
  * @param store The store that should be made usable
  */
 function ValidateAndPatch(store: Observable<ExerciseStore>) {
+  store.exercises.set(GET_BUILTIN_EXERCISES());
+  store.selectedExerciseID.set(store.exercises.peek()[0].id);
+  return;
+
   // If exercises don't exist yet initialize them
-  if (store.exercises.peek() === undefined || store.exercises.peek() === null) {
+  if (store.exercises.peek()) {
     store.exercises.set([]);
-    store.currentSelection.set(NoExercise);
+    store.selectedExerciseID.set(null);
     return;
   }
 
-  // Make sure the selected Exercise points to valid data
-  PatchSelectedExercise(store);
+  const selectedIdPointsToValidEntry: boolean = store.exercises
+    .peek()
+    .some((ex, index, exercises) => ex.id === store.selectedExerciseID.peek());
+
+  if (!selectedIdPointsToValidEntry) {
+    store.selectedExerciseID.set(null);
+  }
 }
 
 /**
- * This takes a store to be patched and validates/patches its selected exercise
- * @param store The Store to be patched
+ * An observable object that always represents the currently selected item
  */
-function PatchSelectedExercise(store: Observable<ExerciseStore>) {
-  const selectedExercise = store.currentSelection.peek();
+export const SelectedItem$ = observable<Exercise | null>((): Exercise | null => {
+  const selectedId = exerciseStore$.selectedExerciseID.get();
+  if (!selectedId) return null;
 
-  // If selected exercise is invalid
-  if (selectedExercise === undefined || selectedExercise === null) {
-    store.currentSelection.set(NoExercise);
-    return;
-  }
+  const maybeExercise = exerciseStore$.exercises.get().find(value => value.id === selectedId);
+  return maybeExercise ?? null;
+});
 
-  // Make sure selected exercise points to the correct entry in ExerciseList
-  if (selectedExercise.kind === 'Exercise') {
-    const maybeID: number = selectedExercise.exercise.id;
+/**
+ * Selects an item in exerciseStore$
+ */
+export const SelectItem = (id: number): void => {
+  if (GetExerciseByID(id) === null) return;
+  exerciseStore$.selectedExerciseID.set(id);
+};
 
-    let maybeExercise: Exercise | null = GetExerciseByID(store.peek(), maybeID);
-    store.currentSelection.set(maybeExercise === null ? NoExercise : Exercise_asSelected(maybeExercise));
-  }
-}
+/**
+ * Removes selected item in exerciseStore$
+ */
+export const DeSelectItem = (): void => {
+  exerciseStore$.selectedExerciseID.set(null);
+};
 
-function GetExerciseByID(store: ExerciseStore, id: number): Exercise | null {
-  let maybeExercise = store.exercises.find(exercise => {
-    return exercise.id === id;
-  });
+/**
+ * Retrieves an exercise by ID
+ * @param id The ID of the searched exercise
+ */
+export const GetExerciseByID = (id: number): Observable<Exercise> | null =>
+  exerciseStore$.exercises.find(ex => ex.id.peek() === id) || null;
 
-  // Return Exercise in success case or convert undefined to null in case we did not find the exercise
-  return typeof maybeExercise === 'undefined' ? null : maybeExercise;
-}
+/**
+ * Adds a HistoryEntry to an exercise
+ * @param exerciseId Exercise that should get the new History Entry
+ * @param maxKg Max KG-value for new HistoryEntry
+ * @param reps Rep value for new HistoryEntry
+ * @constructor
+ */
+export const AddHistoryEntry = (exerciseId: number, maxKg: number, reps: number) => {
+  const exToEdit = GetExerciseByID(exerciseId);
+  if (exToEdit === null) return;
+
+  exToEdit.exerciseHistory.set([
+    ...exToEdit.exerciseHistory.peek(),
+    {
+      date: new Date(),
+      maxWeight: maxKg,
+      repetitions: reps,
+    },
+  ]);
+};

@@ -1,63 +1,60 @@
 import { Text, View, ScrollView, TouchableOpacity, TextInput, Pressable } from 'react-native';
-import { Exercise, GetLastHistoryEntry } from '@/model/Exercise';
-import {
-  exerciseStore$,
-  NoExercise,
-  CreatingExercise,
-  SelectedExerciseType,
-  Exercise_asSelected,
-} from '@/model/ExerciseStore';
+import { Exercise, ExerciseLogEntry } from '@/model/Exercise';
+import { AddHistoryEntry, DeSelectItem, exerciseStore$, SelectedItem$, SelectItem } from '@/model/ExerciseStore';
 import { use$ } from '@legendapp/state/react';
-import { useState } from 'react';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import Feather from '@expo/vector-icons/Feather';
+import { DataSet, LineChart, lineDataItem } from 'react-native-gifted-charts';
+import { observable } from '@legendapp/state';
+import Divider from '@/components/Divider';
+
+const maxWeight$ = observable<number>(0);
+const repetitions$ = observable<number>(0);
 
 export default function PRTrackerScreen() {
   const exercises = use$(exerciseStore$.exercises);
-  const currentSelection: SelectedExerciseType = use$(exerciseStore$.currentSelection);
+  const selectedExercise: Exercise | null = use$(SelectedItem$);
 
-  const lastHistoryDate: Date | null = use$(() => {
-    const selectedExercise = exerciseStore$.currentSelection.get();
-    if (selectedExercise.kind !== 'Exercise') return null;
+  const chartData: DataSet[] | null = use$(() => {
+    const history = SelectedItem$.get()?.exerciseHistory;
+    if (!history) return null;
 
-    const lastHistoryEntry = GetLastHistoryEntry(selectedExercise.exercise);
-
-    return lastHistoryEntry?.date ?? null;
+    return [
+      {
+        data: history.map(log => {
+          return {
+            value: log.maxWeight,
+            label: 'Max Weight (kg)',
+            dataPointColor: '#4287f5',
+            stripColor: '#f5dd42',
+            textColor: '#45f542',
+          } as lineDataItem;
+        }) as lineDataItem[],
+        thickness: 5,
+        color: '#f5424b',
+      } as DataSet,
+      // {
+      //     data: history.map(log => {
+      //         return {
+      //             value: log.repetitions,
+      //             label: 'Repetitions',
+      //         } as lineDataItem;
+      //     }) as lineDataItem[],
+      // } as DataSet,
+    ] as DataSet[];
   });
-
-  const [maxWeight, setMaxWeight] = useState<number>(0);
-  const [repetitions, setRepetitions] = useState<number>(0);
-
-  /**
-   * Gets run when a button in the exercise list gets pushed
-   * @param newSelectedExercise The new exercise that belonged to the pressed button
-   */
-  function OnSelectedExercise(newSelectedExercise: Exercise) {
-    if (currentSelection.kind !== 'Exercise' || currentSelection.exercise.id !== newSelectedExercise.id) {
-      exerciseStore$.currentSelection.set(Exercise_asSelected(newSelectedExercise));
-    } else {
-      exerciseStore$.currentSelection.set(NoExercise);
-    }
-
-    // Reset Inputs
-    setMaxWeight(0);
-    setRepetitions(0);
-  }
 
   /**
    * Gets run when the "+"-button to create a new exercise gets pushed
    */
   function OnCreatingExercise() {
-    exerciseStore$.currentSelection.set(CreatingExercise);
-
-    // Reset Inputs
-    setMaxWeight(0);
-    setRepetitions(0);
+    //Todo: Think about this one very hard
   }
 
   return (
     <View className="flex flex-row">
-      <View className="bg-white m-2 p-4 rounded-xl w-fit">
+      <View className="bg-white m-2 p-4 rounded-xl w-fit h-fit">
         <View className="flex-row items-center space-x-1 mb-4">
           <MaterialCommunityIcons name="dumbbell" color="black" size={26} />
           <Text className="font-bold text-2xl">Exercises</Text>
@@ -65,13 +62,18 @@ export default function PRTrackerScreen() {
 
         <ScrollView className="w-fit">
           {exercises.map((exercise: Exercise) => {
-            let isSelected: boolean =
-              currentSelection.kind === 'Exercise' && currentSelection.exercise.id === exercise.id;
+            let isSelected: boolean = exercise === SelectedItem$.get();
 
             return (
               <TouchableOpacity
                 key={exercise.id}
-                onPress={() => OnSelectedExercise(exercise)}
+                onPress={() => {
+                  if (isSelected) {
+                    DeSelectItem();
+                  } else {
+                    SelectItem(exercise.id);
+                  }
+                }}
                 className={'rounded-md p-2 mb-2' + (isSelected ? ' bg-blue-500' : ' hover:bg-gray-100')}>
                 <Text className={'text-lg ' + (isSelected ? 'text-white ' : 'text-black')}>{exercise.name}</Text>
               </TouchableOpacity>
@@ -86,87 +88,120 @@ export default function PRTrackerScreen() {
         </ScrollView>
       </View>
 
-      {currentSelection.kind === 'Exercise' ? (
-        <ScrollView className="bg-white m-2 p-4 rounded-xl ">
-          <Text className="text-2xl font-bold text-blue-500">{currentSelection.exercise.name}</Text>
+      {selectedExercise ? (
+        <ScrollView className="bg-white m-2 p-6 rounded-xl">
+          <Text className="text-2xl font-bold text-black mb-4">{selectedExercise.name}</Text>
 
-          <View>
-            {/*//Todo: Add icon*/}
-            <Text className="text-lg text-blue-500">Maximum Weight (kg)</Text>
-            <TextInput
-              className="border-2 border-gray-400 rounded-md p-4 text-base"
-              value={maxWeight.toString()}
-              //todo: This will break. I need a proper Number input
-              onChangeText={newVal => setMaxWeight(newVal as unknown as number)}
-              keyboardType="numeric"
-            />
+          <View className="flex flex-row justify-center gap-2">
+            <WeightInput className="flex-1" />
+            <RepInput className="flex-1" />
           </View>
 
-          <View>
-            {/*//Todo: Add icon*/}
-            <Text className="text-lg text-blue-500">Repetitions</Text>
-            <TextInput
-              className="border-2 border-gray-400 rounded-md p-4 text-base"
-              //todo: This will break. I need a proper Number input
-              value={repetitions.toString()}
-              onChangeText={newVal => setRepetitions(newVal as unknown as number)}
-              keyboardType="numeric"
-            />
+          <TouchableOpacity
+            className="flex flex-row mt-4 mb-4 w-full bg-blue-500 hover:bg-blue-600 p-2 rounded-md transition-colors items-center justify-center gap-2"
+            onPress={() => AddHistoryEntry(selectedExercise.id, maxWeight$.peek(), repetitions$.peek())}>
+            <Feather name="save" size={20} color="white" />
+            <Text className="text-white">Save Progress</Text>
+          </TouchableOpacity>
+
+          <View className="mb-4">
+            <Divider width={1} orientation={'horizontal'} color={'#6b7280'} />
           </View>
 
-          {lastHistoryDate !== null && (
-            <Text className="text-blue-500">Last performed: {lastHistoryDate.toLocaleDateString()}</Text>
+          {chartData !== null && (
+            <View>
+              <View className="flex-row gap-2 mb-4">
+                <AntDesign name="areachart" size={26} color="black" />
+                <Text className="font-bold text-2xl">Progress Graph</Text>
+              </View>
+              <ExerciseChart className="" chartData={chartData} />
+            </View>
           )}
 
-          {/*//Todo: Implement Save in Model*/}
-          {/*<TouchableOpacity style={styles.saveButton} onPress={handleSave}>*/}
-          {/*  <Text style={styles.saveButtonText}>Save Progress</Text>*/}
-          {/*</TouchableOpacity>*/}
-
-          {/*//Todo: Implement this after Saving is possible*/}
-          {/*{exercise.history.length > 0 && (*/}
-          {/*  <View style={styles.chartContainer}>*/}
-          {/*    <Text style={styles.sectionTitle}>Progress Graph</Text>*/}
-          {/*    <LineChart*/}
-          {/*      data={chartData}*/}
-          {/*      width={300}*/}
-          {/*      height={200}*/}
-          {/*      chartConfig={{*/}
-          {/*        backgroundColor: '#ffffff',*/}
-          {/*        backgroundGradientFrom: '#ffffff',*/}
-          {/*        backgroundGradientTo: '#ffffff',*/}
-          {/*        decimalPlaces: 0,*/}
-          {/*        color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,*/}
-          {/*        style: {*/}
-          {/*          borderRadius: 16,*/}
-          {/*        },*/}
-          {/*      }}*/}
-          {/*      bezier*/}
-          {/*      style={styles.chart}*/}
-          {/*    />*/}
-
-          {/*    <Text style={styles.sectionTitle}>History Log</Text>*/}
-          {/*    {[...exercise.history].reverse().map((log, index) => (*/}
-          {/*      <View key={index} style={styles.logItem}>*/}
-          {/*        <Text style={styles.logDate}>{new Date(log.date).toLocaleDateString()}</Text>*/}
-          {/*        <View style={styles.logValues}>*/}
-          {/*          <Text style={styles.logWeight}>{log.maxWeight} kg</Text>*/}
-          {/*          <Text style={styles.logReps}>{log.repetitions} reps</Text>*/}
-          {/*        </View>*/}
-          {/*      </View>*/}
-          {/*    ))}*/}
-          {/*  </View>*/}
-          {/*)}*/}
+          {selectedExercise.exerciseHistory.length > 0 && <ExerciseLog logEntries={selectedExercise.exerciseHistory} />}
         </ScrollView>
-      ) : currentSelection.kind === 'CreatingExercise' ? (
-        <View className="flex-1 bg-gray-100 rounded-lg border-2 border-gray-300 justify-center items-center m-2">
-          <Text className="text-gray-500">Exercise Creator will be here when its done :)</Text>
-        </View>
       ) : (
         <View className="flex-1 bg-gray-100 rounded-lg border-2 border-gray-300 justify-center items-center text-gray-500 m-2">
           <Text className="text-gray-500">Select an Exercise to track your progress</Text>
         </View>
       )}
+      {/*    .kind === 'CreatingExercise' ? (*/}
+      {/*  <View className="flex-1 bg-gray-100 rounded-lg border-2 border-gray-300 justify-center items-center m-2">*/}
+      {/*    <Text className="text-gray-500">Exercise Creator will be here when it's done :)</Text>*/}
+      {/*  </View>*/}
     </View>
   );
 }
+
+const WeightInput = (props: { className?: string }) => {
+  const maxWeightAsString = use$(() => maxWeight$.get().toString());
+  return (
+    <View className={props.className}>
+      <View className="flex flex-row items-center p-2 gap-2">
+        <MaterialCommunityIcons className="pt-0.5" name="weight" size={20} color="gray" />
+        <Text className="text-lg text-gray-500">Maximum Weight (kg)</Text>
+      </View>
+      <TextInput
+        className="border-2 border-gray-400 rounded-md p-4 text-base w-full"
+        value={maxWeightAsString}
+        //todo: This will break. I need a proper Number input
+        onChangeText={newVal => maxWeight$.set(newVal as unknown as number)}
+        keyboardType="numeric"
+      />
+    </View>
+  );
+};
+
+const RepInput = (props: { className?: string }) => {
+  const repetitionsString = use$(() => repetitions$.get().toString());
+  return (
+    <View className={props.className}>
+      <View className="flex flex-row items-center p-2 gap-2">
+        <Feather className="pt-0.5" name="repeat" size={20} color="gray" />
+        <Text className="text-lg text-gray-500">Repetitions</Text>
+      </View>
+      <TextInput
+        className="border-2 border-gray-400 rounded-md p-4 text-base w-full"
+        //todo: This will break. I need a proper Number input
+        value={repetitionsString}
+        onChangeText={newVal => repetitions$.set(newVal as unknown as number)}
+        keyboardType="numeric"
+      />
+    </View>
+  );
+};
+
+const ExerciseChart = (props: { className?: string; chartData: DataSet[] }) => {
+  return (
+    <View className={(props.className ?? '') + ''}>
+      <LineChart dataSet={props.chartData} />
+    </View>
+  );
+};
+
+const ExerciseLog = (props: { logEntries: ExerciseLogEntry[] }) => {
+  return (
+    <View>
+      <View className="flex-row gap-2 mb-4 items-center">
+        <MaterialCommunityIcons name="history" size={26} color="black" />
+        <Text className="font-bold text-2xl">History Log</Text>
+      </View>
+
+      {[...props.logEntries]
+        .sort((first, second) => {
+          return second.date.getTime() - first.date.getTime();
+        })
+        .map((log, index) => (
+          <View key={index} className="flex flex-row pt-1 pb-1 px-3 gap-6 m-2 bg-gray-100 rounded-md">
+            <Text className="flex-1 text-lg text-gray-500">
+              {log.date.getHours()}:{log.date.getMinutes()} {log.date.getDay()}.{log.date.getMonth()}.
+              {log.date.getFullYear()}
+            </Text>
+
+            <Text>{log.maxWeight} kg</Text>
+            <Text>{log.repetitions} reps</Text>
+          </View>
+        ))}
+    </View>
+  );
+};
