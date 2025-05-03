@@ -5,7 +5,7 @@ import { use$ } from '@legendapp/state/react';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Feather from '@expo/vector-icons/Feather';
-import { DataSet, LineChart, lineDataItem } from 'react-native-gifted-charts';
+import { DataSet, LineChart } from 'react-native-gifted-charts';
 import { observable } from '@legendapp/state';
 import Divider from '@/components/Divider';
 
@@ -15,6 +15,9 @@ const repetitions$ = observable<number>(0);
 export default function PRTrackerScreen() {
   const exercises = use$(exerciseStore$.exercises);
   const selectedExercise: Exercise | null = use$(SelectedItem$);
+
+  const maxWeightAsString = use$(() => maxWeight$.get().toString());
+  const repetitionsString = use$(() => repetitions$.get().toString());
 
   const chartData: DataSet[] | null = use$(() => {
     const history = SelectedItem$.get()?.exerciseHistory;
@@ -93,8 +96,33 @@ export default function PRTrackerScreen() {
           <Text className="text-2xl font-bold text-black mb-4">{selectedExercise.name}</Text>
 
           <View className="flex flex-row justify-center gap-2">
-            <WeightInput className="flex-1" />
-            <RepInput className="flex-1" />
+            <View className="flex-1">
+              <View className="flex flex-row items-center p-2 gap-2">
+                <MaterialCommunityIcons className="pt-0.5" name="weight" size={20} color="gray" />
+                <Text className="text-lg text-gray-500">Maximum Weight (kg)</Text>
+              </View>
+              <TextInput
+                className="border-2 border-gray-400 rounded-md p-4 text-base w-full"
+                value={maxWeightAsString}
+                //todo: This will break. I need a proper Number input
+                onChangeText={newVal => maxWeight$.set(Number(newVal))}
+                keyboardType="numeric"
+              />
+            </View>
+
+            <View className="flex-1">
+              <View className="flex flex-row items-center p-2 gap-2">
+                <Feather className="pt-0.5" name="repeat" size={20} color="gray" />
+                <Text className="text-lg text-gray-500">Repetitions</Text>
+              </View>
+              <TextInput
+                className="border-2 border-gray-400 rounded-md p-4 text-base w-full"
+                //todo: This will break. I need a proper Number input
+                value={repetitionsString}
+                onChangeText={newVal => repetitions$.set(Number(newVal))}
+                keyboardType="numeric"
+              />
+            </View>
           </View>
 
           <TouchableOpacity
@@ -132,44 +160,6 @@ export default function PRTrackerScreen() {
     </View>
   );
 }
-
-const WeightInput = (props: { className?: string }) => {
-  const maxWeightAsString = use$(() => maxWeight$.get().toString());
-  return (
-    <View className={props.className}>
-      <View className="flex flex-row items-center p-2 gap-2">
-        <MaterialCommunityIcons className="pt-0.5" name="weight" size={20} color="gray" />
-        <Text className="text-lg text-gray-500">Maximum Weight (kg)</Text>
-      </View>
-      <TextInput
-        className="border-2 border-gray-400 rounded-md p-4 text-base w-full"
-        value={maxWeightAsString}
-        //todo: This will break. I need a proper Number input
-        onChangeText={newVal => maxWeight$.set(newVal as unknown as number)}
-        keyboardType="numeric"
-      />
-    </View>
-  );
-};
-
-const RepInput = (props: { className?: string }) => {
-  const repetitionsString = use$(() => repetitions$.get().toString());
-  return (
-    <View className={props.className}>
-      <View className="flex flex-row items-center p-2 gap-2">
-        <Feather className="pt-0.5" name="repeat" size={20} color="gray" />
-        <Text className="text-lg text-gray-500">Repetitions</Text>
-      </View>
-      <TextInput
-        className="border-2 border-gray-400 rounded-md p-4 text-base w-full"
-        //todo: This will break. I need a proper Number input
-        value={repetitionsString}
-        onChangeText={newVal => repetitions$.set(newVal as unknown as number)}
-        keyboardType="numeric"
-      />
-    </View>
-  );
-};
 
 const ExerciseChart = (props: { className?: string; chartData: DataSet[] }) => {
   return (
