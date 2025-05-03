@@ -27,33 +27,64 @@ export default function PRTrackerScreen() {
   const maxWeightAsString = use$(() => maxWeight$.get().toString());
   const repetitionsString = use$(() => repetitions$.get().toString());
 
+  // const chartData: DataSet[] = [
+  //     {
+  //         data: [
+  //             {value: 50},
+  //             {value: 75},
+  //             {value: 100},
+  //         ],
+  //         dataPointsColor: '#4287f5',
+  //         textColor: '#45f542',
+  //     }
+  // ]
+
   const chartData: DataSet[] | null = use$(() => {
-    const history = SelectedItem$.get()?.exerciseHistory;
-    if (!history) return null;
+    // const history = SelectedItem$.get()?.exerciseHistory;
+    // if (!history) return null;
+
+    const history: ExerciseLogEntry[] = [
+      {
+        maxWeight: 50,
+        repetitions: 10,
+        date: new Date(),
+      } as ExerciseLogEntry,
+      { maxWeight: 60, repetitions: 10, date: new Date() } as ExerciseLogEntry,
+      {
+        maxWeight: 65,
+        repetitions: 10,
+        date: new Date(),
+      } as ExerciseLogEntry,
+      { maxWeight: 50, repetitions: 12, date: new Date() } as ExerciseLogEntry,
+      {
+        maxWeight: 55,
+        repetitions: 12,
+        date: new Date(),
+      } as ExerciseLogEntry,
+    ];
 
     return [
       {
         data: history.map(log => {
           return {
             value: log.maxWeight,
-            label: 'Max Weight (kg)',
             dataPointColor: '#4287f5',
             stripColor: '#f5dd42',
             textColor: '#45f542',
-          } as lineDataItem;
-        }) as lineDataItem[],
+          };
+        }),
         thickness: 5,
         color: '#f5424b',
+        dataPointsColor: '#f113db',
       } as DataSet,
-      // {
-      //     data: history.map(log => {
-      //         return {
-      //             value: log.repetitions,
-      //             label: 'Repetitions',
-      //         } as lineDataItem;
-      //     }) as lineDataItem[],
-      // } as DataSet,
-    ] as DataSet[];
+      {
+        data: history.map(log => {
+          return {
+            value: log.repetitions,
+          };
+        }),
+      } as DataSet,
+    ];
   });
 
   /**
@@ -172,7 +203,14 @@ export default function PRTrackerScreen() {
 const ExerciseChart = (props: { className?: string; chartData: DataSet[] }) => {
   return (
     <View className={(props.className ?? '') + ''}>
-      <LineChart dataSet={props.chartData} />
+      <LineChart
+        isAnimated={true}
+        animationDuration={400}
+        animateOnDataChange={true}
+        onDataChangeAnimationDuration={400}
+        renderDataPointsAfterAnimationEnds={true}
+        dataSet={props.chartData}
+      />
     </View>
   );
 };
