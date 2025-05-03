@@ -5,12 +5,20 @@ import { use$ } from '@legendapp/state/react';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Feather from '@expo/vector-icons/Feather';
-import { DataSet, LineChart } from 'react-native-gifted-charts';
+import { DataSet, LineChart, lineDataItem } from 'react-native-gifted-charts';
 import { observable } from '@legendapp/state';
 import Divider from '@/components/Divider';
 
 const maxWeight$ = observable<number>(0);
 const repetitions$ = observable<number>(0);
+
+const creatingExercise$ = observable<boolean>(false);
+const exerciseCreationInfo$ = observable<{ name: string; reset: () => void }>({
+  name: '',
+  reset: () => {
+    exerciseCreationInfo$.name.set('');
+  },
+});
 
 export default function PRTrackerScreen() {
   const exercises = use$(exerciseStore$.exercises);

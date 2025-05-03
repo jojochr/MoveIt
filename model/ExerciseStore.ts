@@ -1,7 +1,7 @@
 import { Observable, observable } from '@legendapp/state';
 import { synced } from '@legendapp/state/sync';
 import { ObservablePersistMMKV } from '@legendapp/state/persist-plugins/mmkv';
-import { Exercise, GET_BUILTIN_EXERCISES } from '@/model/Exercise';
+import { CreateExercise, Exercise, GET_BUILTIN_EXERCISES } from '@/model/Exercise';
 
 export interface ExerciseStore {
   exercises: Exercise[];
@@ -98,4 +98,22 @@ export const AddHistoryEntry = (exerciseId: number, maxKg: number, reps: number)
       repetitions: reps,
     },
   ]);
+};
+
+/**
+ * Creates a new Exercise and adds it to the exerciseStore$<br/>
+ * Also selects it in the process
+ * @param name Name of the new Exercise
+ */
+export const AddNewExercise = (name: string): void => {
+  const IDs = exerciseStore$.exercises.peek().map((ex: Exercise): number => ex.id);
+  let newID = Math.max(...IDs);
+
+  // Pin to default if something goes terribly wrong
+  if (!newID) newID = 0;
+
+  // Add exercise to the others
+  exerciseStore$.exercises.push(CreateExercise(newID, name));
+  // Mark it as selected
+  SelectItem(newID);
 };
