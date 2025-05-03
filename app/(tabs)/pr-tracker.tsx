@@ -177,21 +177,23 @@ const ExerciseLog = (props: { logEntries: ExerciseLogEntry[] }) => {
         <Text className="font-bold text-2xl">History Log</Text>
       </View>
 
-      {[...props.logEntries]
-        .sort((first, second) => {
-          return second.date.getTime() - first.date.getTime();
-        })
-        .map((log, index) => (
-          <View key={index} className="flex flex-row pt-1 pb-1 px-3 gap-6 m-2 bg-gray-100 rounded-md">
-            <Text className="flex-1 text-lg text-gray-500">
-              {log.date.getHours()}:{log.date.getMinutes()} {log.date.getDay()}.{log.date.getMonth()}.
-              {log.date.getFullYear()}
-            </Text>
+      <ScrollView scrollEnabled={true}>
+        {[...props.logEntries]
+          .sort((first, second) => {
+            return second.date.getTime() - first.date.getTime();
+          })
+          .map((log, index) => (
+            <View key={index} className="flex flex-row pt-1 pb-1 px-3 gap-6 m-2 bg-gray-100 rounded-md">
+              <Text className="flex-1 text-lg text-gray-500">
+                {log.date.getHours()}:{log.date.getMinutes()} {log.date.getDay()}.{log.date.getMonth()}.
+                {log.date.getFullYear()}
+              </Text>
 
-            <Text>{log.maxWeight} kg</Text>
-            <Text>{log.repetitions} reps</Text>
-          </View>
-        ))}
+              <Text>{log.maxWeight} kg</Text>
+              <Text>{log.repetitions} reps</Text>
+            </View>
+          ))}
+      </ScrollView>
     </View>
   );
 };
