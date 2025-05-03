@@ -18,14 +18,11 @@ export const exerciseStore$: Observable<ExerciseStore> = observable(
   })
 );
 
-// Make sure we are initialized correctly
-ValidateAndPatch(exerciseStore$);
-
 /**
  * This Does all the necessary validation and stuff to make the store extracted from persistence usable
  * @param store The store that should be made usable
  */
-function ValidateAndPatch(store: Observable<ExerciseStore>) {
+export function ValidateAndPatch(store: Observable<ExerciseStore>) {
   store.exercises.set(GET_BUILTIN_EXERCISES());
   store.selectedExerciseID.set(store.exercises.peek()[0].id);
   return;
@@ -107,7 +104,7 @@ export const AddHistoryEntry = (exerciseId: number, maxKg: number, reps: number)
  */
 export const AddNewExercise = (name: string): void => {
   const IDs = exerciseStore$.exercises.peek().map((ex: Exercise): number => ex.id);
-  let newID = Math.max(...IDs);
+  let newID = Math.max(...IDs) + 1;
 
   // Pin to default if something goes terribly wrong
   if (!newID) newID = 0;
