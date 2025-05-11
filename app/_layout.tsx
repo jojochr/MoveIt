@@ -1,6 +1,6 @@
 import '../global.css';
 import { Drawer } from 'expo-router/drawer';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { DrawerContentScrollView, DrawerItem, DrawerItemList } from '@react-navigation/drawer';
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
@@ -36,6 +36,25 @@ const DrawerLayout = () => {
             drawerIcon: ({ size, color }) => <MaterialCommunityIcons name="dumbbell" size={size} color={color} />,
           }}
         />
+
+        {/*********************************************************/}
+        {/*Under here are items that should not always be rendered*/}
+        {/*********************************************************/}
+
+        {process.env.EXPO_PUBLIC_DEBUG_MODE ? (
+          <Drawer.Screen
+            name={'debug'}
+            options={{
+              drawerLabel: 'Debug',
+              headerTitle: 'Debug Mode',
+              drawerLabelStyle: { fontWeight: '800', color: '#c084fc' },
+              drawerIcon: ({ size }) => <FontAwesome name="code" size={size} color="#9333ea" />,
+            }}
+          />
+        ) : (
+          // Hide debug tab if debug is not enabled
+          <Drawer.Screen name={'debug'} options={{ drawerItemStyle: { display: 'none' } }} />
+        )}
 
         <Drawer.Screen name={'exercise/[id]'} options={{ drawerItemStyle: { display: 'none' } }} />
       </Drawer>
