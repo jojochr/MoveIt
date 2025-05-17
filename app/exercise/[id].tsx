@@ -7,6 +7,14 @@ import { ExerciseId, exercises, exercising_history } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { Drawer } from 'expo-router/drawer';
 import { DrawerActions } from '@react-navigation/native';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { ScrollView, TextInput } from 'react-native-gesture-handler';
+
+export interface ExerciseLogEntry {
+  date: Date;
+  maxWeight: number;
+  repetitions: number;
+}
 
 const ExerciseScreen = () => {
   const db = drizzle(useSQLiteContext(), { schema });
@@ -20,34 +28,78 @@ const ExerciseScreen = () => {
     router.back();
   }
 
-  const exercise = db.query.exercises
-    .findFirst({
-      where: eq(exercises.id, id as ExerciseId),
-    })
-    .sync();
-
+  const exercise = db.query.exercises.findFirst({ where: eq(exercises.id, id as ExerciseId) }).sync();
   const { data: history } = useLiveQuery(
-    db.query.exercising_history.findMany({
-      where: eq(exercising_history.exerciseId, id as ExerciseId),
-      orderBy: (exercising_history, { desc }) => [desc(exercising_history.date)],
-    })
+    db
+      .select()
+      .from(exercising_history)
+      .where(eq(exercising_history.exerciseId, id as ExerciseId)),
+    [id]
   );
 
-  if (exercise === undefined) {
-    return <GoBackIfNotExists id={id} />;
+  /**
+   * This is used to save the data from input fields
+   * @param id ID of the exercise, that this entry belongs to
+   * @param maxWeight Maximum weight from input field
+   * @param repetitions Repetitions from input field
+   */
+  async function AddHistoryEntry(id: ExerciseId, maxWeight: number, repetitions: number) {
+    await db.insert(exercising_history).values({
+      exerciseId: id,
+      maxWeight: maxWeight,
+      repetitions: repetitions,
+      date: new Date(),
+    });
   }
 
   return (
     <>
-      <Drawer.Screen options={{ title: exercise.name }} />
-      <View className="flex h-full w-full items-center justify-center bg-white p-4">
-        <Text>Todo :)</Text>
-      </View>
+      {/*I have to do the undefined check here, or else typescript does not get it...*/}
+      {exercise === undefined ? (
+        <GoBackIfNotExists />
+      ) : (
+        <>
+          <Drawer.Screen options={{ title: exercise.name }} />
+          <View className="flex w-full bg-white p-4">
+            <View className="flex flex-row items-center gap-2 p-2">
+              <MaterialCommunityIcons className="pt-0.5" name="weight" size={20} color="gray" />
+              <Text className="text-lg text-gray-500">Maximum Weight (kg)</Text>
+            </View>
+            {/*Todo: Make a great input component*/}
+            <TextInput className="w-full rounded-md border-2 border-gray-400 p-4 text-base" keyboardType="numeric" />
+
+            <View className="flex flex-row items-center gap-2 p-2">
+              <Feather className="pt-0.5" name="repeat" size={20} color="gray" />
+              <Text className="text-lg text-gray-500">Repetitions</Text>
+            </View>
+            {/*Todo: Make a great input component*/}
+            <TextInput className="w-full rounded-md border-2 border-gray-400 p-4 text-base" keyboardType="numeric" />
+
+            {/*Todo: Implement Save Changes*/}
+            <Pressable
+              className="my-4 flex-row items-center justify-center gap-2 rounded-md bg-blue-500 p-2 transition-colors active:bg-blue-300"
+              onPress={async () => await AddHistoryEntry(exercise.id, 1, 1)}>
+              <Feather name="save" size={20} color="white" />
+              <Text className="text-white">Save Progress</Text>
+            </Pressable>
+
+            <View className="h-0.5 bg-gray-500" />
+
+            <ScrollView>
+              <View className="w-full py-10">
+                <Text className="font-bold text-black">Todo: We need a cool Chart here!</Text>
+              </View>
+
+              {history.length > 0 && <ExerciseLog logEntries={history} />}
+            </ScrollView>
+          </View>
+        </>
+      )}
     </>
   );
 };
 
-const GoBackIfNotExists = ({ id }: { id: number }) => {
+const GoBackIfNotExists = () => {
   const navigation = useNavigation();
   return (
     <>
@@ -73,6 +125,34 @@ const GoBackIfNotExists = ({ id }: { id: number }) => {
         </Pressable>
       </View>
     </>
+  );
+};
+
+const ExerciseLog = (props: { logEntries: ExerciseLogEntry[] }) => {
+  return (
+    <View>
+      <View className="mb-4 flex-row items-center gap-2">
+        <MaterialCommunityIcons name="history" size={26} color="black" />
+        <Text className="text-2xl font-bold">History Log</Text>
+      </View>
+
+      <ScrollView scrollEnabled={true}>
+        {[...props.logEntries]
+          .sort((first, second) => {
+            return second.date.getTime() - first.date.getTime();
+          })
+          .map((log, index) => (
+            <View key={index} className="m-2 flex flex-row gap-6 rounded-md bg-gray-100 px-3 pb-1 pt-1">
+              <Text className="flex-1 text-lg text-gray-500">
+                {log.date.getHours()}:{log.date.getMinutes()} {log.date.getDate()}.{log.date.getMonth() + 1}.{log.date.getFullYear()}
+              </Text>
+
+              <Text>{log.maxWeight} kg</Text>
+              <Text>{log.repetitions} reps</Text>
+            </View>
+          ))}
+      </ScrollView>
+    </View>
   );
 };
 

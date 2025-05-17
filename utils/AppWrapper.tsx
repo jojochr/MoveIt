@@ -4,7 +4,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import migrations from '@/drizzle/migrations';
-import { useDrizzleStudio } from 'expo-drizzle-studio-plugin';
+import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 
 export const DATABASE_NAME = 'exercises';
 
@@ -19,6 +19,15 @@ export const AppWrapper = ({ children }: { children?: ReactNode }) => {
   } else {
     console.trace(`Migrations failed but "error" is "undefined"`);
   }
+
+  /**
+   * Configured to be non-strict because:
+   * - It screams sometimes when using nativewind to give pressable a different color on "active:"
+   */
+  configureReanimatedLogger({
+    level: ReanimatedLogLevel.warn,
+    strict: false,
+  });
 
   return (
     <Suspense fallback={null}>
