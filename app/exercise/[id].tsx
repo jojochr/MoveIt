@@ -7,10 +7,12 @@ import { ExerciseId, exercises, exercising_history } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { Drawer } from 'expo-router/drawer';
 import { DrawerActions } from '@react-navigation/native';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { AntDesign, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ScrollView } from 'react-native-gesture-handler';
-import { ExercisePageInput } from '@/components/ExercisePageInput';
 import { useState } from 'react';
+import { ExercisePageInput } from '@/components/ExercisePage/ExercisePageInput';
+import { ExerciseLog } from '@/components/ExercisePage/ExerciseLog';
+import { ExerciseChart } from '@/components/ExercisePage/ExerciseChart';
 
 export interface ExerciseLogEntry {
   date: Date;
@@ -88,9 +90,18 @@ const ExerciseScreen = () => {
             <View className="h-0.5 bg-gray-500" />
 
             <ScrollView>
-              <View className="w-full py-10">
-                <Text className="font-bold text-black">Todo: We need a cool Chart here!</Text>
-              </View>
+              {history.length > 0 && (
+                <View className="w-full py-10">
+                  <View className="mb-4 flex-row gap-2">
+                    <AntDesign name="areachart" size={26} color="black" />
+                    <Text className="text-2xl font-bold">Progress Graph</Text>
+                  </View>
+                  <ExerciseChart
+                    maxWeightDataPoints={history.map(hist => hist.maxWeight)}
+                    repetitionDataPoints={history.map(hist => hist.repetitions)}
+                  />
+                </View>
+              )}
 
               {history.length > 0 && <ExerciseLog logEntries={history} />}
             </ScrollView>
@@ -127,34 +138,6 @@ const GoBackIfNotExists = () => {
         </Pressable>
       </View>
     </>
-  );
-};
-
-const ExerciseLog = (props: { logEntries: ExerciseLogEntry[] }) => {
-  return (
-    <View>
-      <View className="mb-4 flex-row items-center gap-2">
-        <MaterialCommunityIcons name="history" size={26} color="black" />
-        <Text className="text-2xl font-bold">History Log</Text>
-      </View>
-
-      <ScrollView scrollEnabled={true}>
-        {[...props.logEntries]
-          .sort((first, second) => {
-            return second.date.getTime() - first.date.getTime();
-          })
-          .map((log, index) => (
-            <View key={index} className="m-2 flex flex-row gap-6 rounded-md bg-gray-100 px-3 pb-1 pt-1">
-              <Text className="flex-1 text-lg text-gray-500">
-                {log.date.getHours()}:{log.date.getMinutes()} {log.date.getDate()}.{log.date.getMonth() + 1}.{log.date.getFullYear()}
-              </Text>
-
-              <Text>{log.maxWeight} kg</Text>
-              <Text>{log.repetitions} reps</Text>
-            </View>
-          ))}
-      </ScrollView>
-    </View>
   );
 };
 
