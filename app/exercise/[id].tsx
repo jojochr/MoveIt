@@ -8,7 +8,9 @@ import { eq } from 'drizzle-orm';
 import { Drawer } from 'expo-router/drawer';
 import { DrawerActions } from '@react-navigation/native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { ScrollView, TextInput } from 'react-native-gesture-handler';
+import { ScrollView } from 'react-native-gesture-handler';
+import { ExercisePageInput } from '@/components/ExercisePageInput';
+import { useState } from 'react';
 
 export interface ExerciseLogEntry {
   date: Date;
@@ -36,6 +38,9 @@ const ExerciseScreen = () => {
       .where(eq(exercising_history.exerciseId, id as ExerciseId)),
     [id]
   );
+
+  const [maxWeight, setMaxWeight] = useState<number>(0);
+  const [repetitions, setRepetitions] = useState<number>(0);
 
   /**
    * This is used to save the data from input fields
@@ -65,20 +70,17 @@ const ExerciseScreen = () => {
               <MaterialCommunityIcons className="pt-0.5" name="weight" size={20} color="gray" />
               <Text className="text-lg text-gray-500">Maximum Weight (kg)</Text>
             </View>
-            {/*Todo: Make a great input component*/}
-            <TextInput className="w-full rounded-md border-2 border-gray-400 p-4 text-base" keyboardType="numeric" />
+            <ExercisePageInput displayPrecision={2} numberChangedCallback={setMaxWeight} />
 
             <View className="flex flex-row items-center gap-2 p-2">
               <Feather className="pt-0.5" name="repeat" size={20} color="gray" />
               <Text className="text-lg text-gray-500">Repetitions</Text>
             </View>
-            {/*Todo: Make a great input component*/}
-            <TextInput className="w-full rounded-md border-2 border-gray-400 p-4 text-base" keyboardType="numeric" />
+            <ExercisePageInput displayPrecision={0} numberChangedCallback={setRepetitions} />
 
-            {/*Todo: Implement Save Changes*/}
             <Pressable
               className="my-4 flex-row items-center justify-center gap-2 rounded-md bg-blue-500 p-2 transition-colors active:bg-blue-300"
-              onPress={async () => await AddHistoryEntry(exercise.id, 1, 1)}>
+              onPress={async () => await AddHistoryEntry(exercise.id, maxWeight, repetitions)}>
               <Feather name="save" size={20} color="white" />
               <Text className="text-white">Save Progress</Text>
             </Pressable>
