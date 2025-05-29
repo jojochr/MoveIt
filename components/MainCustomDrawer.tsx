@@ -9,6 +9,7 @@ import { DrawerItem, DrawerItemList } from '@react-navigation/drawer';
 import { Pressable, Text, View } from 'react-native';
 import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ScrollView } from 'react-native-gesture-handler';
+import CreateExerciseModal from '@/components/CreateExerciseModal';
 
 export const MainCustomDrawer = (props: any) => {
   const router = useRouter();
@@ -21,6 +22,8 @@ export const MainCustomDrawer = (props: any) => {
   const [exTabs, set_exTabs] = useState<Exercise[]>([]);
   const { data } = useLiveQuery(drizzle_db.query.exercises.findMany());
   useEffect(() => set_exTabs(data), [data]);
+
+  const [isCreateExerciseModalVisible, setIsCreateExerciseModalVisible] = useState<boolean>(false);
 
   return (
     <View style={{ flex: 1, paddingTop: Math.max(top, 15), paddingBottom: Math.max(bottom, 15) }}>
@@ -56,11 +59,10 @@ export const MainCustomDrawer = (props: any) => {
         )}
         <Pressable
           className="items-center rounded-md bg-blue-600 p-2 hover:bg-blue-700 active:opacity-20"
-          onPress={() => {
-            router.push('/exercise/create-new');
-          }}>
+          onPress={() => setIsCreateExerciseModalVisible(true)}>
           <AntDesign name="pluscircle" size={20} color="white" />
         </Pressable>
+        <CreateExerciseModal visible={isCreateExerciseModalVisible} closeModal={() => setIsCreateExerciseModalVisible(false)} />
       </View>
     </View>
   );

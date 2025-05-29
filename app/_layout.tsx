@@ -43,7 +43,6 @@ const DrawerLayout = () => {
         {/* These buttons are used in custom drawer, and should not automatically be included in main drawer */}
         <Drawer.Screen name={'pr-tracker-home'} options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name={'exercise/[id]'} options={{ drawerItemStyle: { display: 'none' } }} />
-        <Drawer.Screen name={'exercise/create-new'} options={{ drawerItemStyle: { display: 'none' } }} />
       </Drawer>
     </AppWrapper>
   );
