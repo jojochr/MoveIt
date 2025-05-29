@@ -1,7 +1,12 @@
-import { KeyboardAvoidingView, Pressable, Text, View, StyleSheet, Modal } from 'react-native';
+import { KeyboardAvoidingView, Pressable, Text, View, StyleSheet, Modal, Alert, AlertButton, AlertOptions } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import Feather from '@expo/vector-icons/Feather';
 import { useEffect, useState } from 'react';
+import { useSQLiteContext } from 'expo-sqlite';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import * as schema from '@/db/schema';
+import { exercises } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 
 interface Props {
   visible: boolean;
@@ -9,16 +14,35 @@ interface Props {
 }
 
 const CreateExerciseModal = ({ visible, closeModal }: Props) => {
-  let exerciseName: string = '';
-  const [nameIsValid, setNameIsValid] = useState<boolean>(false);
+  const expo_db = useSQLiteContext();
+  const drizzle_db = drizzle(expo_db, { schema });
 
-  /**
-   * Todo: Actually do stuff in database
-   * - Check if exercise with same name exists
-   * - Run insert statement
-   * - Check if this works with my existing drawer
-   * - Rerun query in drawer if needed
-   */
+  const [exerciseName, setExerciseName] = useState<string>('');
+  const [exerciseNameIsValid, setExerciseNameIsValid] = useState<boolean>(false);
+
+  const trySaveNewExercise = async () => {
+    if (!exerciseNameIsValid) {
+      console.log('Tried to save, even though the Exercise Name is invalid. This should never happen');
+      // Return here, so we dont close the modal in the error case
+      return;
+    }
+
+    // Check if name already exists
+    const exercises_withSameName = await drizzle_db.select().from(exercises).where(eq(exercises.name, exerciseName));
+    if (exercises_withSameName.length > 0) {
+      Alert.alert(
+        'Could not create Exercise',
+        'Another exercise with the same name already exists',
+        [{ text: 'Ok', style: 'cancel', isPreferred: true } satisfies AlertButton],
+        { userInterfaceStyle: 'unspecified' } satisfies AlertOptions
+      );
+    }
+
+    await drizzle_db.insert(exercises).values({ name: exerciseName });
+
+    // Close modal after successful save
+    closeModal();
+  };
 
   return (
     <Modal visible={visible} transparent={true} animationType={'fade'} onRequestClose={closeModal}>
@@ -33,20 +57,16 @@ const CreateExerciseModal = ({ visible, closeModal }: Props) => {
 
           <ExerciseNameInput
             NewNameHook={(newName, newNameValid) => {
-              // Do this without useState, because we don't want to rerender here
-              exerciseName = newName;
-              // Absolutely use useState here, because we might need to disable button
-              setNameIsValid(newNameValid);
+              setExerciseName(newName);
+              setExerciseNameIsValid(newNameValid);
             }}
           />
 
           <View className="flex-row items-center justify-center gap-5">
             <Pressable
               className="flex flex-row items-center justify-center gap-2 rounded-md bg-blue-500 p-2 pr-3 transition-colors hover:bg-blue-600"
-              disabled={!nameIsValid}
-              onPress={() => {
-                console.log(`New Name would have been: "${exerciseName}"`);
-              }}>
+              disabled={!exerciseNameIsValid}
+              onPress={trySaveNewExercise}>
               <Feather name="check" size={24} color="black" />
               <Text> Submit</Text>
             </Pressable>
