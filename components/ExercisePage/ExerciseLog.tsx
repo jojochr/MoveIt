@@ -15,7 +15,7 @@ export const ExerciseLog = ({ logEntries }: Props) => {
         <Text className="text-2xl font-bold">History Log</Text>
       </View>
 
-      <ScrollView scrollEnabled={true}>
+      <ScrollView scrollEnabled={true} nestedScrollEnabled={true}>
         {[...logEntries]
           .sort((first, second) => {
             return second.date.getTime() - first.date.getTime();
