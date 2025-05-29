@@ -23,7 +23,7 @@ const CreateExerciseModal = ({ visible, closeModal }: Props) => {
   const trySaveNewExercise = async () => {
     if (!exerciseNameIsValid) {
       console.log('Tried to save, even though the Exercise Name is invalid. This should never happen');
-      // Return here, so we dont close the modal in the error case
+      // Return here, so we don't close the modal in the error case
       return;
     }
 
