@@ -147,11 +147,7 @@ const ExerciseNameInput = ({ NewNameHook }: NameInputProps) => {
     <KeyboardAvoidingView>
       <Text className="text-sm text-gray-500">Name</Text>
       <TextInput
-        className="w-full rounded-md border-2"
-        style={{
-          borderColor: hasErrors ? '#dc2626' : '#000',
-          backgroundColor: hasErrors ? '#fee2e2' : 'transparent',
-        }}
+        className={`w-full rounded-md border-2 ${hasErrors ? 'border-red-500 bg-red-100' : 'border-black'}`}
         autoCorrect={false}
         autoFocus={true}
         autoCapitalize={'words'}
@@ -163,7 +159,7 @@ const ExerciseNameInput = ({ NewNameHook }: NameInputProps) => {
 
       {/* Maybe show a nice error icon or style this some more */}
       {Object.keys(errors).map((key, index) => (
-        <Text className="text-xs" style={{ color: '#dc2626' }} key={`exercise-creator-name-error-${index}`}>
+        <Text className="text-xs text-red-600" key={`exercise-creator-name-error-${index}`}>
           - {(errors as any)[key]}
         </Text>
       ))}
