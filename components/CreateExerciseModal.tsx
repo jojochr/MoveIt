@@ -52,7 +52,7 @@ const CreateExerciseModal = ({ visible, closeModal }: Props) => {
       {/* One transparent view as container, one view that scales relative to its container */}
       {/* flex-1 sadly does not work on modal directly */}
       <View className="flex-1 items-center justify-center">
-        <View className="h-fit w-10/12 gap-4 rounded-md bg-white p-4">
+        <View className="h-fit w-10/12 gap-4 rounded-3xl bg-white p-6">
           <Text className="text-xl font-bold">Create New Exercise</Text>
 
           <ExerciseNameInput
@@ -145,7 +145,7 @@ const ExerciseNameInput = ({ NewNameHook }: NameInputProps) => {
 
   return (
     <KeyboardAvoidingView>
-      <Text className="text-sm text-gray-500">Name</Text>
+      <Text className="ml-2 text-sm text-gray-500">Name</Text>
       <TextInput
         className={`w-full rounded-md border-2 ${hasErrors ? 'border-red-500 bg-red-100' : 'border-black'}`}
         autoCorrect={false}
@@ -159,7 +159,7 @@ const ExerciseNameInput = ({ NewNameHook }: NameInputProps) => {
 
       {/* Maybe show a nice error icon or style this some more */}
       {Object.keys(errors).map((key, index) => (
-        <Text className="text-xs text-red-600" key={`exercise-creator-name-error-${index}`}>
+        <Text className="ml-1 text-xs text-red-600" key={`exercise-creator-name-error-${index}`}>
           - {(errors as any)[key]}
         </Text>
       ))}

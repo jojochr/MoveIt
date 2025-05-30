@@ -13,6 +13,7 @@ import { useState } from 'react';
 import { ExercisePageInput } from '@/components/ExercisePage/ExercisePageInput';
 import { ExerciseLog } from '@/components/ExercisePage/ExerciseLog';
 import { ExerciseChart } from '@/components/ExercisePage/ExerciseChart';
+import { DeleteExerciseModal, ModalResult as DeleteExerciseModalResult } from '@/components/ExercisePage/DeleteExerciseModal';
 
 export interface ExerciseLogEntry {
   date: Date;
@@ -59,6 +60,22 @@ const ExerciseScreen = () => {
     });
   }
 
+  const [isDeleteExerciseModalVisible, setIsDeleteExerciseModalVisible] = useState<boolean>(false);
+  const CloseDeleteExerciseModal = (result: DeleteExerciseModalResult) => {
+    switch (result) {
+      // The default case would be an unexpected value
+      // I am most comfortable, if we just get kicked back to some safe-space :)
+      default:
+      case 'Exercise Deleted':
+        // I flipped the order (so we navigate first and then hide the modal) because it seems smoother
+        router.replace('/pr-tracker-home');
+        setIsDeleteExerciseModalVisible(false);
+        return;
+      case 'Deletion Cancelled':
+        setIsDeleteExerciseModalVisible(false);
+        return;
+    }
+  };
   return (
     <>
       {/*I have to do the undefined check here, or else typescript does not get it...*/}
@@ -66,7 +83,17 @@ const ExerciseScreen = () => {
         <GoBackIfNotExists />
       ) : (
         <>
-          <Drawer.Screen options={{ title: exercise.name }} />
+          <Drawer.Screen
+            options={{
+              title: exercise.name,
+              headerRight: () => (
+                <Pressable className="m-4" onPress={() => setIsDeleteExerciseModalVisible(true)}>
+                  <DeleteExerciseModal visible={isDeleteExerciseModalVisible} exercise={exercise} closeModal={CloseDeleteExerciseModal} />
+                  <Feather name="trash-2" size={30} color="gray" />
+                </Pressable>
+              ),
+            }}
+          />
           <View className="flex w-full bg-white p-4">
             <View className="flex flex-row items-center gap-2 p-2">
               <MaterialCommunityIcons className="pt-0.5" name="weight" size={20} color="gray" />

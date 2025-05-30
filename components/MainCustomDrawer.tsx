@@ -27,7 +27,9 @@ export const MainCustomDrawer = (props: any) => {
 
   return (
     <View style={{ flex: 1, paddingTop: Math.max(top, 15), paddingBottom: Math.max(bottom, 15) }}>
-      <DrawerItemList {...props} />
+      <View className="mx-4">
+        <DrawerItemList {...props} />
+      </View>
 
       <View className="m-4 h-min shrink gap-4 rounded-xl bg-gray-200 p-4">
         <DrawerItem
