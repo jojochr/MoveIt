@@ -43,7 +43,9 @@ const ExerciseScreen = () => {
   );
 
   const [maxWeight, setMaxWeight] = useState<number>(0);
+  const [maxWeightIsValid, setMaxWeightIsValid] = useState<boolean>(true);
   const [repetitions, setRepetitions] = useState<number>(0);
+  const [repetitionsIsValid, setRepetitionsIsValid] = useState<boolean>(true);
 
   /**
    * This is used to save the data from input fields
@@ -99,16 +101,31 @@ const ExerciseScreen = () => {
               <MaterialCommunityIcons className="pt-0.5" name="weight" size={20} color="gray" />
               <Text className="text-lg text-gray-500">Maximum Weight (kg)</Text>
             </View>
-            <ExercisePageInput displayPrecision={2} numberChangedCallback={setMaxWeight} />
+            <ExercisePageInput
+              displayPrecision={2}
+              numberChangedCallback={(newValue, isValid) => {
+                setMaxWeight(newValue);
+                setMaxWeightIsValid(isValid);
+              }}
+              unitText={'kg'}
+            />
 
             <View className="flex flex-row items-center gap-2 p-2">
               <Feather className="pt-0.5" name="repeat" size={20} color="gray" />
               <Text className="text-lg text-gray-500">Repetitions</Text>
             </View>
-            <ExercisePageInput displayPrecision={0} numberChangedCallback={setRepetitions} />
+            <ExercisePageInput
+              displayPrecision={0}
+              numberChangedCallback={(newValue, isValid) => {
+                setRepetitions(newValue);
+                setRepetitionsIsValid(isValid);
+              }}
+              unitText={repetitions === 1 ? 'rep' : 'reps'}
+            />
 
             <Pressable
-              className="my-4 flex-row items-center justify-center gap-2 rounded-md bg-blue-500 p-2 transition-colors active:bg-blue-300"
+              disabled={!maxWeightIsValid || !repetitionsIsValid}
+              className={`my-4 flex-row items-center justify-center gap-2 rounded-md bg-blue-500 p-2 transition-colors active:bg-blue-300 ${!maxWeightIsValid || !repetitionsIsValid ? 'opacity-70' : 'opacity-100'}`}
               onPress={async () => await AddHistoryEntry(exercise.id, maxWeight, repetitions)}>
               <Feather name="save" size={20} color="white" />
               <Text className="text-white">Save Progress</Text>
