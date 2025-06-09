@@ -16,6 +16,7 @@ import { ExerciseChart } from '@/components/ExercisePage/ExerciseChart';
 import { DeleteExerciseModal, ModalResult as DeleteExerciseModalResult } from '@/components/ExercisePage/DeleteExerciseModal';
 
 export interface ExerciseLogEntry {
+  id: number;
   date: Date;
   maxWeight: number;
   repetitions: number;

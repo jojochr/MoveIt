@@ -31,8 +31,8 @@ export const ExerciseLog = ({ logEntries }: Props) => {
           .sort((first, second) => {
             return second.date.getTime() - first.date.getTime();
           })
-          .map((log, index) => (
-            <View key={index} className="m-2 flex flex-row gap-6 rounded-md bg-gray-100 px-3 pb-1 pt-1">
+          .map(log => (
+            <View key={log.id} className="m-2 flex flex-row gap-6 rounded-md bg-gray-100 px-3 pb-1 pt-1">
               <Text className="flex-1 text-lg text-gray-500">{getPrettyDateString(log.date)}</Text>
 
               <Text>{log.maxWeight} kg</Text>
