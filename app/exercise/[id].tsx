@@ -140,10 +140,7 @@ const ExerciseScreen = () => {
                     <AntDesign name="areachart" size={26} color="black" />
                     <Text className="text-2xl font-bold">Progress Graph</Text>
                   </View>
-                  <ExerciseChart
-                    maxWeightDataPoints={history.map(hist => hist.maxWeight)}
-                    repetitionDataPoints={history.map(hist => hist.repetitions)}
-                  />
+                  <ExerciseChart ChartType={'all data'} exerciseID={exercise.id} />
                 </View>
               )}
 
