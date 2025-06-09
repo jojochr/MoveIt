@@ -8,6 +8,17 @@ interface Props {
 }
 
 export const ExerciseLog = ({ logEntries }: Props) => {
+  const getPrettyDateString = (date: Date): string => {
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+
+    const days = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear().toString();
+
+    return `${hours}:${minutes} ${days}.${month}.${year}`;
+  };
+
   return (
     <View>
       <View className="mb-4 flex-row items-center gap-2">
@@ -22,9 +33,7 @@ export const ExerciseLog = ({ logEntries }: Props) => {
           })
           .map((log, index) => (
             <View key={index} className="m-2 flex flex-row gap-6 rounded-md bg-gray-100 px-3 pb-1 pt-1">
-              <Text className="flex-1 text-lg text-gray-500">
-                {log.date.getHours()}:{log.date.getMinutes()} {log.date.getDate()}.{log.date.getMonth() + 1}.{log.date.getFullYear()}
-              </Text>
+              <Text className="flex-1 text-lg text-gray-500">{getPrettyDateString(log.date)}</Text>
 
               <Text>{log.maxWeight} kg</Text>
               <Text>{log.repetitions} reps</Text>
