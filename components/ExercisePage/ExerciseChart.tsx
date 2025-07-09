@@ -1,19 +1,31 @@
 import { LineChart, lineDataItem } from 'react-native-gifted-charts';
 import { View } from 'react-native';
 
-interface Props {
+export interface Props {
   className?: string;
-  maxWeightDataPoints: number[];
-  repetitionDataPoints: number[];
+  historyData: HistoryData[];
 }
 
-export const ExerciseChart = ({ className, maxWeightDataPoints, repetitionDataPoints }: Props) => {
-  const maxWeightLine = maxWeightDataPoints.map(number => {
-    return { value: number, dataPointText: number.toString() } satisfies lineDataItem;
+export interface HistoryData {
+  timeOfRecord?: Date;
+  weightData: number;
+  repetitionData: number;
+}
+
+export const ExerciseChart = ({ className, historyData }: Props) => {
+  const maxWeightLine = historyData.map(histEntry => {
+    return {
+      value: histEntry.weightData,
+      dataPointText: histEntry.weightData.toString(),
+      label: histEntry.timeOfRecord?.toString(),
+    } satisfies lineDataItem;
   });
 
-  const repetitionsLine = repetitionDataPoints.map(number => {
-    return { value: number, dataPointText: number.toString() } satisfies lineDataItem;
+  const repetitionsLine = historyData.map(histEntry => {
+    return {
+      value: histEntry.repetitionData,
+      dataPointText: histEntry.repetitionData.toString(),
+    } satisfies lineDataItem;
   });
 
   return (

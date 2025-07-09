@@ -9,10 +9,10 @@ import { Drawer } from 'expo-router/drawer';
 import { DrawerActions } from '@react-navigation/native';
 import { AntDesign, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ScrollView } from 'react-native-gesture-handler';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ExercisePageInput } from '@/components/ExercisePage/ExercisePageInput';
 import { ExerciseLog } from '@/components/ExercisePage/ExerciseLog';
-import { ExerciseChart } from '@/components/ExercisePage/ExerciseChart';
+import { ExerciseChart, HistoryData } from '@/components/ExercisePage/ExerciseChart';
 import { DeleteExerciseModal, ModalResult as DeleteExerciseModalResult } from '@/components/ExercisePage/DeleteExerciseModal';
 
 export interface ExerciseLogEntry {
@@ -47,6 +47,19 @@ const ExerciseScreen = () => {
   const [maxWeightIsValid, setMaxWeightIsValid] = useState<boolean>(true);
   const [repetitions, setRepetitions] = useState<number>(0);
   const [repetitionsIsValid, setRepetitionsIsValid] = useState<boolean>(true);
+
+  const [chartData, setChartData] = useState<HistoryData[]>([]);
+  useEffect(() => {
+    const newData = history.map(histEntry => {
+      return {
+        timeOfRecord: histEntry.date,
+        repetitionData: histEntry.repetitions,
+        weightData: histEntry.maxWeight,
+      } satisfies HistoryData;
+    });
+
+    setChartData(newData);
+  }, [history]);
 
   /**
    * This is used to save the data from input fields
@@ -135,16 +148,13 @@ const ExerciseScreen = () => {
             <View className="h-0.5 bg-gray-500" />
 
             <ScrollView>
-              {history.length > 0 && (
+              {chartData.length > 0 && (
                 <View className="w-full py-10">
                   <View className="mb-4 flex-row gap-2">
                     <AntDesign name="areachart" size={26} color="black" />
                     <Text className="text-2xl font-bold">Progress Graph</Text>
                   </View>
-                  <ExerciseChart
-                    maxWeightDataPoints={history.map(hist => hist.maxWeight)}
-                    repetitionDataPoints={history.map(hist => hist.repetitions)}
-                  />
+                  <ExerciseChart historyData={chartData} />
                 </View>
               )}
 
