@@ -5,7 +5,8 @@
   "scripts": {
     "start": "expo start",
     "android": "expo run:android --device",
-    "prebuild": "expo prebuild --clean",
+    "ios": "echo 'Add expo run:ios --device here, when the project is ready to run on Iphones'",
+    "prebuild": "expo prebuild --clean --platform android",
     "lint": "expo lint",
     "format": "prettier --write .; expo lint",
     "gensql": "npx drizzle-kit generate"
