@@ -97,7 +97,7 @@ const ExerciseScreen = () => {
               ),
             }}
           />
-          <View className="flex w-full bg-white p-4">
+          <View className="h-full w-full bg-white p-4">
             <View className="flex flex-row items-center gap-2 p-2">
               <MaterialCommunityIcons className="pt-0.5" name="weight" size={20} color="gray" />
               <Text className="text-lg text-gray-500">Maximum Weight (kg)</Text>

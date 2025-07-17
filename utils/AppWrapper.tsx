@@ -5,6 +5,7 @@ import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import migrations from '@/drizzle/migrations';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export const DATABASE_NAME = 'exercises';
 
@@ -31,11 +32,13 @@ export const AppWrapper = ({ children }: { children?: ReactNode }) => {
 
   return (
     <Suspense fallback={null}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <SQLiteProvider databaseName={DATABASE_NAME} options={{ enableChangeListener: true }} useSuspense={true}>
-          {children}
-        </SQLiteProvider>
-      </GestureHandlerRootView>
+      <SafeAreaProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <SQLiteProvider databaseName={DATABASE_NAME} options={{ enableChangeListener: true }} useSuspense={true}>
+            {children}
+          </SQLiteProvider>
+        </GestureHandlerRootView>
+      </SafeAreaProvider>
     </Suspense>
   );
 };
