@@ -98,31 +98,38 @@ const ExerciseScreen = () => {
             }}
           />
           <View className="h-full w-full bg-white p-4">
-            <View className="flex flex-row items-center gap-2 p-2">
-              <MaterialCommunityIcons className="pt-0.5" name="weight" size={20} color="gray" />
-              <Text className="text-lg text-gray-500">Maximum Weight (kg)</Text>
-            </View>
-            <ExercisePageInput
-              displayPrecision={2}
-              numberChangedCallback={(newValue, isValid) => {
-                setMaxWeight(newValue);
-                setMaxWeightIsValid(isValid);
-              }}
-              unitText={'kg'}
-            />
+            {/* Exercise Inputs */}
+            <View className="w-full flex-row gap-4">
+              <View className="grow">
+                <View className="flex flex-row items-center gap-2 p-2">
+                  <MaterialCommunityIcons className="pt-0.5" name="weight" size={20} color="gray" />
+                  <Text className="text-lg text-gray-500">Weight (kg)</Text>
+                </View>
+                <ExercisePageInput
+                  displayPrecision={2}
+                  numberChangedCallback={(newValue, isValid) => {
+                    setMaxWeight(newValue);
+                    setMaxWeightIsValid(isValid);
+                  }}
+                  unitText={'kg'}
+                />
+              </View>
 
-            <View className="flex flex-row items-center gap-2 p-2">
-              <Feather className="pt-0.5" name="repeat" size={20} color="gray" />
-              <Text className="text-lg text-gray-500">Repetitions</Text>
+              <View className="grow">
+                <View className="flex flex-row items-center gap-2 p-2">
+                  <Feather className="pt-0.5" name="repeat" size={20} color="gray" />
+                  <Text className="text-lg text-gray-500">Repetitions</Text>
+                </View>
+                <ExercisePageInput
+                  displayPrecision={0}
+                  numberChangedCallback={(newValue, isValid) => {
+                    setRepetitions(newValue);
+                    setRepetitionsIsValid(isValid);
+                  }}
+                  unitText={repetitions === 1 ? 'rep' : 'reps'}
+                />
+              </View>
             </View>
-            <ExercisePageInput
-              displayPrecision={0}
-              numberChangedCallback={(newValue, isValid) => {
-                setRepetitions(newValue);
-                setRepetitionsIsValid(isValid);
-              }}
-              unitText={repetitions === 1 ? 'rep' : 'reps'}
-            />
 
             <Pressable
               disabled={!maxWeightIsValid || !repetitionsIsValid}

@@ -1,18 +1,20 @@
 import { TextInput } from 'react-native-gesture-handler';
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, Text, TextStyle, View } from 'react-native';
 
 interface Props {
   displayPrecision: number;
   numberChangedCallback?: (newValue: number, isValid: boolean) => void;
   unitText?: string;
   showIncrementDecrementButtons?: boolean;
+  textStyle?: TextStyle;
 }
 
 export const ExercisePageInput = ({
   displayPrecision = 2,
   numberChangedCallback,
   unitText,
+  textStyle = { fontSize: 24, lineHeight: 32 } satisfies TextStyle,
   showIncrementDecrementButtons = true,
 }: Props) => {
   const [input, setInput] = useState<string>((0).toFixed(displayPrecision));
@@ -46,23 +48,31 @@ export const ExercisePageInput = ({
 
   return (
     <View
-      className={`w-full flex-row items-center rounded-md border-2 px-4 py-1 ${isValid ? 'border-gray-400' : 'border-red-600 bg-red-100'}`}>
+      className={`w-full flex-row items-center rounded-md border-2 py-1 pl-1 pr-2 ${isValid ? 'border-gray-400' : 'border-red-600 bg-red-100'}`}>
       <TextInput
+        className="flex-1"
+        style={textStyle}
+        textAlign={'right'}
         inputMode={'decimal'}
         keyboardType={'decimal-pad'}
         underlineColorAndroid={'transparent'}
         autoCorrect={false}
+        selectTextOnFocus={true}
         value={input}
         onChangeText={onChange}
         onBlur={() => onSubmit(input)}
         submitBehavior={'blurAndSubmit'}
       />
 
-      {unitText && <Text>{unitText}</Text>}
+      {unitText && (
+        <Text className="mr-1" style={textStyle}>
+          {unitText}
+        </Text>
+      )}
 
       {showIncrementDecrementButtons && (
         <IncrementDecrementButtons
-          className="flex flex-1 items-end"
+          className="flex items-end"
           onIncrement={() => {
             onSubmit(OperateIfNumber(input, { type: 'Increment' }));
           }}
@@ -100,12 +110,12 @@ export const IncrementDecrementButtons = ({
 }) => {
   return (
     <View className={className}>
-      <View className="w-fit">
-        <Pressable onPress={onIncrement} className="rounded-t-full border-2 px-2" style={{ borderBottomWidth: 1 }}>
-          <Text className="text-center text-2xl font-black">+</Text>
+      <View className="min-w-fit max-w-fit">
+        <Pressable className="w-7 rounded-t-full border-2 active:opacity-60" style={{ borderBottomWidth: 1 }} onPress={onIncrement}>
+          <Text className="text-center text-xl font-black">+</Text>
         </Pressable>
-        <Pressable onPress={onDecrement} className="rounded-b-full border-2" style={{ borderTopWidth: 1 }}>
-          <Text className="text-center text-2xl font-black">—</Text>
+        <Pressable className="w-7 rounded-b-full border-2 active:opacity-60" style={{ borderTopWidth: 1 }} onPress={onDecrement}>
+          <Text className="text-center text-xl font-black">—</Text>
         </Pressable>
       </View>
     </View>
