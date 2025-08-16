@@ -1,0 +1,39 @@
+[[language]]
+name = "html"
+formatter = { command = 'bun run format' }
+auto-format = true
+
+[[language]]
+name = "json"
+formatter = { command = 'bun run format' }
+auto-format = true
+
+[[language]]
+name = "css"
+formatter = { command = 'bun run format' }
+auto-format = true
+
+[[language]]
+name = "javascript"
+formatter = { command = 'bun run format' }
+auto-format = true
+
+[[language]]
+name = "typescript"
+formatter = { command = 'bun run format' }
+auto-format = true
+
+[[language]]
+name = "jsx"
+formatter = { command = 'bun run format' }
+auto-format = true
+
+[[language]]
+name = "tsx"
+formatter = { command = 'bun run format' }
+auto-format = true
+
+[[language]]
+name = "svelte"
+formatter = { command = 'bun run format' }
+auto-format = true
