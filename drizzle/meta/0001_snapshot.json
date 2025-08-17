@@ -64,9 +64,7 @@
       "indexes": {
         "date_idx": {
           "name": "date_idx",
-          "columns": [
-            "date"
-          ],
+          "columns": ["date"],
           "isUnique": false
         }
       },
@@ -75,12 +73,8 @@
           "name": "exercising_history_exerciseId_exercises_id_fk",
           "tableFrom": "exercising_history",
           "tableTo": "exercises",
-          "columnsFrom": [
-            "exerciseId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["exerciseId"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
